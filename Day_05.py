@@ -1,3 +1,6 @@
+import unittest
+
+
 def read_puzzle_data(filename):
     with open(filename, 'r') as f:
         data = f.read().strip().split('\n')
@@ -5,11 +8,20 @@ def read_puzzle_data(filename):
 
 
 def has_at_least_three_vowels(candidate):
-    pass
+    tally = 0
+    for c in candidate:
+        if c in 'aeiouAEIOU':
+            tally += 1
+            if tally >= 3:
+                return True
+    return False
 
 
 def has_double_letter(candidate):
-    pass
+    for i in range(len(candidate) - 1):
+        if candidate[i] == candidate[i + 1]:
+            return True
+    return False
 
 
 def is_nice(candidate):
@@ -17,10 +29,10 @@ def is_nice(candidate):
     for d in disallowed:
         if candidate.find(d) != -1:
             return False
-        if not has_at_least_three_vowels(candidate):
-            return False
-        if not has_double_letter(candidate):
-            return False
+    if not has_at_least_three_vowels(candidate):
+        return False
+    if not has_double_letter(candidate):
+        return False
     return True
 
 
@@ -34,3 +46,11 @@ def part_one(filename):
 
 
 print(part_one('Day_05_input.txt'))
+
+class Test(unittest.TestCase):
+    def test_is_nice(self):
+        self.assertTrue(is_nice('ugknbfddgicrmopn'))
+        self.assertTrue(is_nice('aaa'))
+        self.assertFalse(is_nice('jchzalrnumimnmhp'))
+        self.assertFalse(is_nice('haegwjzuvuyypxyu'))
+        self.assertFalse(is_nice('dvszwmarrgswjxmb'))
