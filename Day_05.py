@@ -35,7 +35,28 @@ def is_nice_one(candidate):
         return False
     return True
 
-def is_nice_two(s):
+
+def has_two_pair(candidate):
+    for i in range(len(candidate) - 1):
+        for j in range(i+2, len(candidate) - 1):
+            if candidate[i] == candidate[j] and candidate[i+1] == candidate[j+1]:
+                return True
+    return False
+
+
+def has_repeat_with_one_letter_between(candidate):
+    for i in range(len(candidate) - 2):
+        if candidate[i] == candidate[i+2]:
+            return True
+    return False
+
+
+def is_nice_two(candidate):
+    if not has_two_pair(candidate):
+        return False
+    if not has_repeat_with_one_letter_between(candidate):
+        return False
+
     return True
 
 def part_one(filename):
@@ -64,3 +85,17 @@ class Test(unittest.TestCase):
         self.assertFalse(is_nice_one('jchzalrnumimnmhp'))
         self.assertFalse(is_nice_one('haegwjzuvuyypxyu'))
         self.assertFalse(is_nice_one('dvszwmarrgswjxmb'))
+
+    def test_has_two_pair(self):
+        self.assertTrue(has_two_pair('qjhvhtzxzqqjkmpb'))
+        self.assertTrue(has_two_pair('xxyxx'))
+        self.assertTrue(has_two_pair('uurcxstgmygtbstg'))
+        self.assertFalse(has_two_pair('ieodomkazucvgmuy'))
+        self.assertFalse(has_two_pair('abcdefghijk'))
+
+    def test_has_repeat_with_one_letter_between(self):
+        self.assertTrue(has_repeat_with_one_letter_between('qjhvhtzxzqqjkmpb'))
+        self.assertTrue(has_repeat_with_one_letter_between('xxyxx'))
+        self.assertFalse(has_repeat_with_one_letter_between('uurcxstgmygtbstg'))
+        self.assertTrue(has_repeat_with_one_letter_between('ieodomkazucvgmuy'))
+        self.assertFalse(has_repeat_with_one_letter_between('abcdefghijk'))
