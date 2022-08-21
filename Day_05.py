@@ -24,7 +24,7 @@ def has_double_letter(candidate):
     return False
 
 
-def is_nice(candidate):
+def is_nice_one(candidate):
     disallowed = ['ab', 'cd', 'pq', 'xy']
     for d in disallowed:
         if candidate.find(d) != -1:
@@ -35,22 +35,32 @@ def is_nice(candidate):
         return False
     return True
 
+def is_nice_two(s):
+    return True
 
 def part_one(filename):
     data = read_puzzle_data(filename)
     tally = 0
     for s in data:
-        if is_nice(s):
+        if is_nice_one(s):
             tally += 1
     return tally
 
 
-print(part_one('Day_05_input.txt'))
+def part_two(filename):
+    data = read_puzzle_data(filename)
+    tally = 0
+    for s in data:
+        if is_nice_two(s):
+            tally += 1
+    return tally
+
+print(part_two('Day_05_input.txt'))
 
 class Test(unittest.TestCase):
-    def test_is_nice(self):
-        self.assertTrue(is_nice('ugknbfddgicrmopn'))
-        self.assertTrue(is_nice('aaa'))
-        self.assertFalse(is_nice('jchzalrnumimnmhp'))
-        self.assertFalse(is_nice('haegwjzuvuyypxyu'))
-        self.assertFalse(is_nice('dvszwmarrgswjxmb'))
+    def test_is_nice_one(self):
+        self.assertTrue(is_nice_one('ugknbfddgicrmopn'))
+        self.assertTrue(is_nice_one('aaa'))
+        self.assertFalse(is_nice_one('jchzalrnumimnmhp'))
+        self.assertFalse(is_nice_one('haegwjzuvuyypxyu'))
+        self.assertFalse(is_nice_one('dvszwmarrgswjxmb'))
