@@ -41,7 +41,27 @@ def part_one(filename):
     print('Total area', tally)
 
 
-part_one('Day_02_input.txt')
+def calculate_ribbon(length, width, height):
+    lwh = []
+    lwh.append(length)
+    lwh.append(width)
+    lwh.append(height)
+    lwh.sort()
+    area_of_smallest_side = (lwh[0] + lwh[1]) * 2
+    area_of_prism = length * width * height
+    return area_of_smallest_side + area_of_prism
+
+
+def part_two(filename):
+    data = read_puzzle_input(filename)
+    tally = 0
+    for box_dimensions in data:
+        ribbon_length = calculate_ribbon(*parse_dimensions(box_dimensions))
+        tally += ribbon_length
+    print('Total ribbon', tally)
+
+
+part_two('Day_02_input.txt')
 
 
 class Test(unittest.TestCase):
@@ -52,3 +72,8 @@ class Test(unittest.TestCase):
     def test_parse_dimensions(self):
         self.assertEqual((2, 3, 4), parse_dimensions('2x3x4'))
         self.assertEqual((1, 1, 10), parse_dimensions('1x1x10'))
+
+    def test_calculate_ribbon(self):
+        self.assertEqual(34, calculate_ribbon(*parse_dimensions('2x3x4')))
+        self.assertEqual(14, calculate_ribbon(*parse_dimensions('1x1x10')))
+
