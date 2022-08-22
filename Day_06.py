@@ -83,8 +83,7 @@ class LightGridMarkTwo:
         tally = 0
         for y in range(self.grid.shape[0]):
             for x in range(self.grid.shape[1]):
-                if self.grid[y][x] == b'#':
-                    tally += 1
+               tally += self.grid[y][x]
         return tally
 
 
@@ -152,7 +151,7 @@ def part_two(filename):
     command_input = read_puzzle_input(filename)
     return light_show_mark_two(command_input)
 
-# print('Lights lit:', part_two('Day_06_input.txt'))
+print('Lights lit:', part_two('Day_06_input.txt'))
 
 
 class Test(unittest.TestCase):
@@ -167,21 +166,25 @@ class TestLightGridMarkTwo(unittest.TestCase):
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0", str(grid))
+        self.assertEqual(0, grid.tally_lit())
         process_command_mark_two(grid, *parse_line('turn on 0,0 through 3,3'))
         self.assertEqual("1, 1, 1, 1\n"
                          "1, 1, 1, 1\n"
                          "1, 1, 1, 1\n"
                          "1, 1, 1, 1", str(grid))
+        self.assertEqual(16, grid.tally_lit())
         process_command_mark_two(grid, *parse_line('turn off 0,0 through 3,3'))
         self.assertEqual("0, 0, 0, 0\n"
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0", str(grid))
+        self.assertEqual(0, grid.tally_lit())
         process_command_mark_two(grid, *parse_line('toggle 0,0 through 3,3'))
         self.assertEqual("2, 2, 2, 2\n"
                          "2, 2, 2, 2\n"
                          "2, 2, 2, 2\n"
                          "2, 2, 2, 2", str(grid))
+        self.assertEqual(32, grid.tally_lit())
         process_command_mark_two(grid, *parse_line('turn off 0,0 through 3,3'))
         process_command_mark_two(grid, *parse_line('turn off 0,0 through 3,3'))
         process_command_mark_two(grid, *parse_line('turn off 0,0 through 3,3'))
@@ -189,6 +192,7 @@ class TestLightGridMarkTwo(unittest.TestCase):
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0\n"
                          "0, 0, 0, 0", str(grid))
+        self.assertEqual(0, grid.tally_lit())
 
 
 class TestLightGrid(unittest.TestCase):
