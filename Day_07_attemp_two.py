@@ -1,27 +1,11 @@
 import unittest
 
 
-def read_puzzle_input(filename):
-    with open(filename, 'r') as f:
-        connections = f.read().strip().split('\n')
-    parsed_connections = [connection.split(' ') for connection in connections]
-    return parsed_connections
-
-def type_convert_to_ints(parsed_connections):
-    for i in range(len(parsed_connections)):
-        for j in range(len(parsed_connections[i])):
-            if parsed_connections[i][j].isdigit():
-                parsed_connections[i][j] = int(parsed_connections[i][j])
-
-def part_one(filename):
-    connections = read_puzzle_input(filename)
-    type_convert_to_ints(connections)
-    for x in connections:
-        print(x)
-
 class Connector:
     def __init__(self):
         self.output_wire = None
+    def __repr__(self):
+        return f'{self.__class__.__name__} output_wire({self.output_wire})'
 
 class SingleWireOperandConnector(Connector):
     pass
@@ -55,7 +39,21 @@ class RShiftConnector(ShiftConnector):
 class SignalConnector(Connector):
     pass
 
-def x(connections):
+
+def read_puzzle_input(filename):
+    with open(filename, 'r') as f:
+        connections = f.read().strip().split('\n')
+    parsed_connections = [connection.split(' ') for connection in connections]
+    return parsed_connections
+
+def type_convert_to_ints(parsed_connections):
+    for i in range(len(parsed_connections)):
+        for j in range(len(parsed_connections[i])):
+            if parsed_connections[i][j].isdigit():
+                parsed_connections[i][j] = int(parsed_connections[i][j])
+
+def type_convert_to_connectors(connections):
+    rval = []
     for connection in connections:
         if connection[0] == 'NOT':
             assert (connection[2] == '->')
@@ -92,7 +90,15 @@ def x(connections):
             connector.output_wire = connection[2]
         else:
             raise ValueError(f'Can not interpret "{connection}" ')
+        rval.append(connector)
+    return rval
 
+def part_one(filename):
+    connections = read_puzzle_input(filename)
+    type_convert_to_ints(connections)
+    connectors = type_convert_to_connectors(connections)
+    for x in connectors:
+        print(x)
 
 part_one('Day_07_short_input.txt')
 
