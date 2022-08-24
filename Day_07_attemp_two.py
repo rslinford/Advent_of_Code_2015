@@ -1,5 +1,27 @@
 import unittest
 
+class Wire:
+    all_instances = {}
+
+    def __init__(self, wire_id):
+        self.wire_id = wire_id
+        # Input from one of Gate, Wire, or Value
+        self.input = None
+        # Zero or more output targets
+        self.output = set()
+        if self.wire_id in self.all_instances.keys():
+            raise ValueError(f'Wire id {self.wire_id} already exists')
+        self.all_instances[self.wire_id] = self
+
+    def __repr__(self):
+        return f'Wire id({self.wire_id}) input({self.input}) outputs({[x.wire_id for x in self.output]})'
+
+    @classmethod
+    def wire_factory(cls, wire_id):
+        if wire_id in cls.all_instances.keys():
+            return cls.all_instances[wire_id]
+        return Wire(wire_id)
+
 
 class Connector:
     def __init__(self):
@@ -117,13 +139,36 @@ def type_convert_to_connectors(connections):
         rval.append(connector)
     return rval
 
+def wire_it_up(connectors):
+    for connector in connectors:
+        output_wire = Wire.wire_factory(connector.output_wire)
+        output_wire.input = connector
+        match connector:
+            case NotConnector():
+                pass
+            case OrConnector():
+                pass
+            case AndConnector():
+                pass
+            case LShiftConnector():
+                pass
+            case RShiftConnector():
+                pass
+            case SignalConnector():
+                pass
+            case _:
+                raise ValueError(f'Unrecognized type({connector.__class__.__name__})')
+
 
 def part_one(filename):
     connections = read_puzzle_input(filename)
     type_convert_to_ints(connections)
     connectors = type_convert_to_connectors(connections)
-    for x in connectors:
-        print(x)
+    wire_it_up(connectors)
+    for wire in Wire.all_instances.values():
+        print(wire)
+    # for x in connectors:
+    #     print(x)
 
 
 part_one('Day_07_short_input.txt')
@@ -155,3 +200,14 @@ class Test(unittest.TestCase):
         self.assertEqual('f', connectors[4].output_wire)
         self.assertEqual(2, connectors[4].operand_shift_size)
         self.assertEqual('x', connectors[4].operand_wire)
+
+    def test_wire(self):
+        # self.assertEqual(0, len(Wire.all_instances))
+        w1 = Wire('ab')
+        # self.assertEqual(1, len(Wire.all_instances))
+        self.assertEqual('ab', w1.wire_id)
+        with self.assertRaises(ValueError):
+            Wire('ab')
+        w2 = Wire.wire_factory('ab')
+        self.assertIs(w1, w2)
+
