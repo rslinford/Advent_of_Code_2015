@@ -9,19 +9,23 @@ def read_puzzle_input(filename):
 
 
 class SignalProvider:
-    pass
+    def __repr__(self):
+        return f'{self.__class__.__name__}'
 
 class SingleSignalProvider(SignalProvider):
     def __init__(self, output):
         self.output = output
+        self.output.input = self
 
     def __repr__(self):
-        return f'{self.__class__.__name__} output {self.output}'
+        return f'{self.__class__.__name__} output {self.output.wire_id}'
 
 class MultiSignalProvider(SignalProvider):
     def __init__(self, output):
         self.output_set = set()
         self.output_set.add(output)
+        if output:
+            output.input = self
 
     def __repr__(self):
         return f'{self.__class__.__name__} output {self.output_set}'
@@ -34,7 +38,8 @@ class NumericSignal(SingleSignalProvider):
     def __init__(self, signal, output):
         super().__init__(output)
         self.signal = signal
-
+    def __repr__(self):
+        return f'{self.__class__.__name__} signal: {self.signal} output: {self.output.wire_id}'
 
 class Wire(MultiSignalProvider):
     all_instances = {}
@@ -49,13 +54,13 @@ class Wire(MultiSignalProvider):
         self.all_instances[self.wire_id] = self
 
     def __repr__(self):
-        return f'Wire id: {self.wire_id} input: {self.input} output: {self.output}'
+        return f'Wire id: {self.wire_id} input: {self.input.wire_id} outputs: {[x.wire_id for x in self.output]}'
 
     @classmethod
-    def wire_factory(cls, wire_id):
+    def wire_factory(cls, wire_id, output=None):
         if wire_id in cls.all_instances.keys():
             return cls.all_instances[wire_id]
-        return Wire(wire_id)
+        return Wire(wire_id, output)
 
 
 class Gate(SignalProvider):
@@ -86,9 +91,12 @@ class NotOperation(SignalProvider):
 
 
 class BitShift(SignalProvider):
-    def __init__(self, shift_size):
+    def __init__(self, shift_size, operand, output):
         super().__init__()
         self.shift_size = shift_size
+        self.operand = operand
+        self.output = output
+        self.output.input = self
     def __repr__(self):
         return f'{self.__class__.__name__} shift_size: {self.shift_size}'
 
@@ -96,12 +104,12 @@ class BitShift(SignalProvider):
 # LeftShift(connection[2], Wire.wire_factory(connection[0]), Wire.wire_factory(connection[4]))
 class LeftShift(BitShift):
     def __init__(self, shift_size, operand, output):
-        super().__init__(shift_size)
+        super().__init__(shift_size, operand, output)
 
 # RightShift(Wire.wire_factory(connection[2]), Wire.wire_factory(connection[0]), Wire.wire_factory(connection[4]))
 class RightShift(BitShift):
     def __init__(self, shift_size, operand, output):
-        super().__init__(shift_size)
+        super().__init__(shift_size, operand, output)
 
 
 def wire_up_signal_providers(connections):
@@ -121,10 +129,9 @@ def wire_up_signal_providers(connections):
             LeftShift(connection[2], Wire.wire_factory(connection[0]), Wire.wire_factory(connection[4]))
         elif connection[1] == 'RSHIFT':
             assert (connection[3] == '->')
-            op = RightShift(Wire.wire_factory(connection[2]), Wire.wire_factory(connection[0]), Wire.wire_factory(connection[4]))
+            RightShift(Wire.wire_factory(connection[2]), Wire.wire_factory(connection[0]), Wire.wire_factory(connection[4]))
         elif connection[1] == '->':
-            op = NumericSignal(connection[0])
-            op.output = Wire.wire_factory(connection[2])
+            op = NumericSignal(connection[0],  Wire.wire_factory(connection[2]))
         else:
             raise ValueError(f'Can not interpret "{connection}" ')
 
@@ -140,9 +147,10 @@ def part_one(filename):
 
 class Test(unittest.TestCase):
     def test_bit_shift(self):
-        ls = LeftShift(2)
+        a, b, c = Wire('a', None), Wire('b', None), Wire('c', None)
+        ls = LeftShift(2, a, b)
         self.assertEqual(2, ls.shift_size)
-        rs = RightShift(3)
+        rs = RightShift(3, b, c)
         self.assertEqual(3, rs.shift_size)
 
     def test_wire_up_signal_providers(self):
