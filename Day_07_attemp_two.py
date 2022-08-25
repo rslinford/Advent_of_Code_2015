@@ -276,14 +276,3 @@ class Test(unittest.TestCase):
         self.assertEqual('f', connectors[4].transmitter)
         self.assertEqual(2, connectors[4].shift_size)
         self.assertEqual('x', connectors[4].receiver)
-
-    def test_wire(self):
-        # self.assertEqual(0, len(Wire.all_instances))
-        w1 = Wire('ab')
-        # self.assertEqual(1, len(Wire.all_instances))
-        self.assertEqual('ab', w1.wire_id)
-        with self.assertRaises(ValueError):
-            Wire('ab')
-        w2 = Wire.wire_factory('ab')
-        self.assertIs(w1, w2)
-
