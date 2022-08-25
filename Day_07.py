@@ -15,7 +15,7 @@ class SignalProvider:
 class SingleSignalProvider(SignalProvider):
     def __init__(self, output):
         self.output = output
-        self.output.input = self
+        self.output.receiver = self
 
     def __repr__(self):
         return f'{self.__class__.__name__} output {self.output.wire_id}'
@@ -25,7 +25,7 @@ class MultiSignalProvider(SignalProvider):
         self.output_set = set()
         self.output_set.add(output)
         if output:
-            output.input = self
+            output.receiver = self
 
     def __repr__(self):
         return f'{self.__class__.__name__} output {self.output_set}'

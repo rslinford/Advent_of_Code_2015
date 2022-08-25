@@ -6,15 +6,15 @@ class Wire:
     def __init__(self, wire_id):
         self.wire_id = wire_id
         # Input from one of Gate, Wire, or Value
-        self.input = None
-        # Zero or more output targets
-        self.output = set()
+        self.receiver = None
+        # Zero or more transmitter targets
+        self.transmitter = set()
         if self.wire_id in self.all_instances.keys():
             raise ValueError(f'Wire id {self.wire_id} already exists')
         self.all_instances[self.wire_id] = self
 
     def __repr__(self):
-        return f'Wire id({self.wire_id}) input({self.input}) outputs({[x.wire_id for x in self.output]})'
+        return f'Wire id({self.wire_id}) input({self.receiver}) outputs({[x.wire_id for x in self.transmitter]})'
 
     @classmethod
     def wire_factory(cls, wire_id):
@@ -25,46 +25,46 @@ class Wire:
 
 class Connector:
     def __init__(self):
-        self.output_wire = None
+        self.transmitter = None
 
     def __repr__(self):
-        return f'{self.__class__.__name__} output_wire({self.output_wire})'
+        return f'{self.__class__.__name__} transmitter({self.transmitter})'
 
 
-class SingleWireOperandConnector(Connector):
+class SingleReceiverConnector(Connector):
     def __init__(self):
         super().__init__()
-        self.operand_wire = None
+        self.receiver = None
 
     def __repr__(self):
-        return super().__repr__() + f' operand_wire({self.operand_wire})'
+        return super().__repr__() + f' receiver({self.receiver})'
 
 
-class DoubleWireOperandConnector(Connector):
+class DoubleReceiverConnector(Connector):
     def __init__(self):
         super().__init__()
-        self.operand_wire_one = None
-        self.operand_wire_two = None
+        self.receiver_one = None
+        self.receiver_two = None
     def __repr__(self):
-        return super().__repr__() + f' operand_wire_one({self.operand_wire_one}) operand_wire_two({self.operand_wire_two})'
+        return super().__repr__() + f' receiver_one({self.receiver_one}) receiver_two({self.receiver_two})'
 
 
-class ShiftConnector(SingleWireOperandConnector):
+class ShiftConnector(SingleReceiverConnector):
     def __init__(self):
         super().__init__()
-        self.operand_shift_size = None
+        self.shift_size = None
     def __repr__(self):
-        return super().__repr__() + f' operand_shift_size({self.operand_shift_size})'
+        return super().__repr__() + f' shift_size({self.shift_size})'
 
-class NotConnector(SingleWireOperandConnector):
+class NotConnector(SingleReceiverConnector):
     pass
 
 
-class OrConnector(DoubleWireOperandConnector):
+class OrConnector(DoubleReceiverConnector):
     pass
 
 
-class AndConnector(DoubleWireOperandConnector):
+class AndConnector(DoubleReceiverConnector):
     pass
 
 
@@ -104,45 +104,50 @@ def type_convert_to_connectors(connections):
         if connection[0] == 'NOT':
             assert (connection[2] == '->')
             connector = NotConnector()
-            connector.operand_wire = connection[1]
-            connector.output_wire = connection[3]
+            connector.receiver = connection[1]
+            connector.transmitter = connection[3]
         elif connection[1] == 'OR':
             assert (connection[3] == '->')
             connector = OrConnector()
-            connector.operand_wire_one = connection[0]
-            connector.operand_wire_two = connection[2]
-            connector.output_wire = connection[4]
+            connector.receiver_one = connection[0]
+            connector.receiver_two = connection[2]
+            connector.transmitter = connection[4]
         elif connection[1] == 'AND':
             assert (connection[3] == '->')
             connector = AndConnector()
-            connector.operand_wire_one = connection[0]
-            connector.operand_wire_two = connection[2]
-            connector.output_wire = connection[4]
+            connector.receiver_one = connection[0]
+            connector.receiver_two = connection[2]
+            connector.transmitter = connection[4]
         elif connection[1] == 'LSHIFT':
             assert (connection[3] == '->')
             connector = LShiftConnector()
-            connector.operand_wire = connection[0]
-            connector.operand_shift_size = connection[2]
-            connector.output_wire = connection[4]
+            connector.receiver = connection[0]
+            connector.shift_size = connection[2]
+            connector.transmitter = connection[4]
         elif connection[1] == 'RSHIFT':
             assert (connection[3] == '->')
             connector = RShiftConnector()
-            connector.operand_wire = connection[0]
-            connector.operand_shift_size = connection[2]
-            connector.output_wire = connection[4]
+            connector.receiver = connection[0]
+            connector.shift_size = connection[2]
+            connector.transmitter = connection[4]
         elif connection[1] == '->':
             connector = SignalConnector()
             connector.signal_value = connection[0]
-            connector.output_wire = connection[2]
+            connector.transmitter = connection[2]
         else:
             raise ValueError(f'Can not interpret "{connection}" ')
         rval.append(connector)
     return rval
 
+
 def wire_it_up(connectors):
     for connector in connectors:
-        output_wire = Wire.wire_factory(connector.output_wire)
-        output_wire.input = connector
+        output_wire = Wire.wire_factory(connector.transmitter)
+        output_wire.receiver = connector
+
+
+def x(connectors):
+    for connector in connectors:
         match connector:
             case NotConnector():
                 pass
@@ -193,13 +198,13 @@ class Test(unittest.TestCase):
         type_convert_to_ints(parsed_connections)
         connectors = type_convert_to_connectors(parsed_connections)
         self.assertEqual(123, connectors[0].signal_value)
-        self.assertEqual('x', connectors[0].output_wire)
-        self.assertEqual('d', connectors[2].output_wire)
-        self.assertEqual('x', connectors[2].operand_wire_one)
-        self.assertEqual('y', connectors[2].operand_wire_two)
-        self.assertEqual('f', connectors[4].output_wire)
-        self.assertEqual(2, connectors[4].operand_shift_size)
-        self.assertEqual('x', connectors[4].operand_wire)
+        self.assertEqual('x', connectors[0].transmitter)
+        self.assertEqual('d', connectors[2].transmitter)
+        self.assertEqual('x', connectors[2].receiver_one)
+        self.assertEqual('y', connectors[2].receiver_two)
+        self.assertEqual('f', connectors[4].transmitter)
+        self.assertEqual(2, connectors[4].shift_size)
+        self.assertEqual('x', connectors[4].receiver)
 
     def test_wire(self):
         # self.assertEqual(0, len(Wire.all_instances))
