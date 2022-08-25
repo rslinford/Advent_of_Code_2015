@@ -21,6 +21,8 @@ class Wire:
 
     @classmethod
     def wire_factory(cls, wire_id):
+        if isinstance(wire_id, int):
+            raise ValueError('wire_id cannot be an integer')
         if wire_id in cls.all_instances.keys():
             return cls.all_instances[wire_id]
         return Wire(wire_id)
@@ -205,10 +207,16 @@ def wire_it_up(connectors):
                 wire = Wire.wire_factory(connector.receiver)
                 wire.transmitter.add(connector)
             case DoubleReceiverConnector():
-                wire = Wire.wire_factory(connector.receiver_one)
-                wire.transmitter.add(connector)
-                wire = Wire.wire_factory(connector.receiver_two)
-                wire.transmitter.add(connector)
+                if isinstance(connector.receiver_one, int):
+                    connector.received_signal_one = connector.receiver_one
+                else:
+                    wire = Wire.wire_factory(connector.receiver_one)
+                    wire.transmitter.add(connector)
+                if isinstance(connector.receiver_two, int):
+                    connector.received_signal_two = connector.receiver_two
+                else:
+                    wire = Wire.wire_factory(connector.receiver_two)
+                    wire.transmitter.add(connector)
             case SignalConnector():
                 pass
             case _:
