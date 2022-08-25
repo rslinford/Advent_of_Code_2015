@@ -25,9 +25,8 @@ class Wire:
             return cls.all_instances[wire_id]
         return Wire(wire_id)
 
-    def send_signal(self, signal_value):
-        assert(self.signal_value == None)
-        self.signal_value = signal_value
+    def send_signal(self):
+        assert(self.signal_value != None)
         for connector in self.transmitter:
             connector.receive(self.wire_id, self.signal_value)
 
@@ -53,10 +52,10 @@ class SingleReceiverConnector(Connector):
         return super().__repr__() + f' receiver({self.receiver})'
 
     def receive(self, wire_id, signal_value):
-        if wire_id != self.receiver.wire_id:
+        if wire_id != self.receiver:
             raise ValueError(f'"{wire_id}" is not received here')
         self.received_signal = signal_value
-        self.signal_value = self.operate()
+        self.operate()
         follow_circuit(self.transmitter, self.signal_value)
 
 
@@ -79,15 +78,18 @@ class DoubleReceiverConnector(Connector):
         return super().__repr__() + f' receiver_one({self.receiver_one}) receiver_two({self.receiver_two})'
 
     def receive(self, wire_id, signal_value):
-        if wire_id == self.receiver_one.wire_id:
+        if wire_id == self.receiver_one:
             self.received_signal_one = signal_value
-        elif wire_id == self.receiver_two.wire_id:
+        elif wire_id == self.receiver_two:
             self.received_signal_two = signal_value
         else:
             raise ValueError(f'"{wire_id}" is not received here')
+        if self.gate_is_ready_to_transmit():
+            self.operate()
+            follow_circuit(self.transmitter, self.signal_value)
 
     def gate_is_ready_to_transmit(self):
-        return self.received_signal_two != None and self.received_signal_two != None
+        return self.received_signal_one != None and self.received_signal_two != None
 
 class ShiftConnector(SingleReceiverConnector):
     def __init__(self):
@@ -98,16 +100,20 @@ class ShiftConnector(SingleReceiverConnector):
 
 class NotConnector(SingleReceiverConnector):
     def operate(self):
-        self.signal_value = ~self.received_signal
+        self.signal_value = ~self.received_signal & 65535
 
 
 class OrConnector(DoubleReceiverConnector):
     def operate(self):
+        if self.received_signal_one == None or self.received_signal_two == None:
+            pass
         self.signal_value = self.received_signal_one | self.received_signal_two
 
 
 class AndConnector(DoubleReceiverConnector):
     def operate(self):
+        if self.received_signal_one == None or self.received_signal_two == None:
+            pass
         self.signal_value = self.received_signal_one & self.received_signal_two
 
 
@@ -124,6 +130,10 @@ class RShiftConnector(ShiftConnector):
 class SignalConnector(Connector):
     def operate(self):
         pass
+
+class WireToWireConnector(SingleReceiverConnector):
+    def operate(self):
+        self.signal_value = self.received_signal
 
 
 def read_puzzle_input(filename):
@@ -172,9 +182,13 @@ def type_convert_to_connectors(connections):
             connector.receiver = connection[0]
             connector.shift_size = connection[2]
             connector.transmitter = connection[4]
-        elif connection[1] == '->':
+        elif connection[1] == '->' and isinstance(connection[0], int):
             connector = SignalConnector()
             connector.signal_value = connection[0]
+            connector.transmitter = connection[2]
+        elif connection[1] == '->':
+            connector = WireToWireConnector()
+            connector.receiver = connection[0]
             connector.transmitter = connection[2]
         else:
             raise ValueError(f'Can not interpret "{connection}" ')
@@ -201,34 +215,16 @@ def wire_it_up(connectors):
                 raise ValueError(f'Unrecognized type({connector.__class__.__name__})')
 
 
-def follow_circuit(wire: Wire, signal_value: int):
-    wire.send_signal(signal_value)
+def follow_circuit(wire_id: str, signal_value: int):
+    wire = Wire.wire_factory(wire_id)
+    wire.signal_value = signal_value
+    wire.send_signal()
 
 
 def juice_it_up(connectors):
     for connector in connectors:
         if isinstance(connector, SignalConnector):
-            wire = Wire.wire_factory(connector.transmitter)
-            follow_circuit(wire, connector.signal_value)
-
-
-def x(connectors):
-    for connector in connectors:
-        match connector:
-            case NotConnector():
-                pass
-            case OrConnector():
-                pass
-            case AndConnector():
-                pass
-            case LShiftConnector():
-                pass
-            case RShiftConnector():
-                pass
-            case SignalConnector():
-                pass
-            case _:
-                raise ValueError(f'Unrecognized type({connector.__class__.__name__})')
+            follow_circuit(connector.transmitter, connector.signal_value)
 
 
 def part_one(filename):
@@ -237,13 +233,13 @@ def part_one(filename):
     connectors = type_convert_to_connectors(connections)
     wire_it_up(connectors)
     juice_it_up(connectors)
-    # for wire in Wire.all_instances.values():
-    #     print(wire)
-    # for x in connectors:
-    #     print(x)
+    for wire in Wire.all_instances.values():
+        print(wire)
+    for x in connectors:
+        print(x)
 
 
-part_one('Day_07_short_input.txt')
+part_one('Day_07_input.txt')
 
 
 class Test(unittest.TestCase):
