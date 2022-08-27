@@ -142,15 +142,14 @@ def dijkstra(start_vertex, edges):
     unvisited_cities = initialize_unvisited_cities()
     previous_vertices = {}
     while unvisited_cities:
-        print('Unvisited', unvisited_cities)
         current_vertex = pick_closest_unvisited_vertex(shortest_known_distances, unvisited_cities)
         unvisited_cities.remove(current_vertex)
-        print('current vertex', current_vertex)
         for unvisited_neighbor in unvisited_neighbors_of(current_vertex, unvisited_cities):
             d = distance(current_vertex, unvisited_neighbor, edges) + shortest_known_distances[current_vertex]
             if d < shortest_known_distances[unvisited_neighbor]:
                 shortest_known_distances[unvisited_neighbor] = d
                 previous_vertices[unvisited_neighbor] = current_vertex
+    return previous_vertices, shortest_known_distances
 
 
 def part_one(filename):
@@ -185,4 +184,7 @@ class Test(unittest.TestCase):
     def test_dijkstra(self):
         data = read_puzzle_input('Day_09_short_input.txt')
         edges = build_edges(data)
-        dijkstra('London', edges)
+        previous_vertices, shortest_known_distances = dijkstra('London', edges)
+        print('previous', previous_vertices)
+        print('shortest known', shortest_known_distances)
+
