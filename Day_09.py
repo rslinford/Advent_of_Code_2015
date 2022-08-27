@@ -1,10 +1,6 @@
 import math
 import re
 import unittest
-from abc import abstractmethod
-from enum import Enum
-from typing import List, Any, Dict
-
 
 """
 Let distance of start vertex from start vertex = 0
@@ -23,9 +19,6 @@ WHILE vertices remain unvisited
 END WHILE
 """
 
-# class Handedness(Enum):
-#     LEFT = 1
-#     RIGHT = 2
 
 class Edge:
     def __init__(self, from_city, to_city, distance):
@@ -46,7 +39,6 @@ class Edge:
         return self.from_city < other.from_city
 
 
-
 class Vertex:
     all_instances = {}
 
@@ -57,10 +49,10 @@ class Vertex:
 
     def __repr__(self):
         return f'{self.__class__.__name__} city_name({self.city_name}) ' + \
-               f'adjacent_vertexes({[x.city_name for x in self.adjacent_vertices]})'
+               f'adjacent_vertexes({[x for x in self.adjacent_vertices]})'
 
     @classmethod
-    def factory(cls, city_name):
+    def factory(cls, city_name: str):
         if city_name in cls.all_instances.keys():
             return cls.all_instances[city_name]
         cls.all_instances[city_name] = Vertex(city_name)
@@ -76,7 +68,6 @@ def read_puzzle_input(filename):
 def parse_line(line):
     result = re.search(r'(\w+) to (\w+) = (\d+)', line)
     return result.group(1), result.group(2), int(result.group(3))
-
 
 
 def build_edges(data):
@@ -97,31 +88,30 @@ def create_vertices(edges: dict[(str, str), Edge]):
 
 
 def distance(vertex_one, vertex_two, edges: dict[(str, str)]):
-    if (vertex_one.city_name, vertex_two.city_name) in edges:
-        return edges[vertex_one.city_name, vertex_two.city_name]
-    if (vertex_two.city_name, vertex_one.city_name) in edges:
-        return edges[vertex_two.city_name, vertex_one.city_name]
-    raise ValueError(f'Edge for {vertex_one.city_name}, {vertex_two.city_name} not found.')
+    if (vertex_one, vertex_two) in edges:
+        return edges[vertex_one, vertex_two].distance
+    if (vertex_two, vertex_one) in edges:
+        return edges[vertex_two, vertex_one].distance
+    raise ValueError(f'Edge for {vertex_one}, {vertex_two} not found.')
 
 
-
-def traverse(vertex: Vertex, edges, path: list[str]):
-    print(vertex, path)
-    #  Guard against cycles
-    if vertex.city_name in path:
-        return
-    for adjacent_vertex in vertex.adjacent_vertices:
-        print(f'Distance between {vertex.city_name} and {adjacent_vertex.city_name}:',
-              distance(vertex, adjacent_vertex, edges))
-        path.append(adjacent_vertex.city_name)
-        traverse(adjacent_vertex, edges, path)
+# def traverse(vertex: Vertex, edges, path: list[str]):
+#     print(vertex, path)
+#     #  Guard against cycles
+#     if vertex in path:
+#         return
+#     for adjacent_vertex in vertex.adjacent_vertices:
+#         print(f'Distance between {vertex} and {adjacent_vertex}:',
+#               distance(vertex.city_name, adjacent_vertex.city_name, edges))
+#         path.append(adjacent_vertex.city_name)
+#         traverse(adjacent_vertex, edges, path)
 
 
 def initialize_shortest_distances(start_city_name):
     rval = {}
-    assert(Vertex.all_instances[start_city_name])
+    assert (Vertex.all_instances[start_city_name])
     for city_name in Vertex.all_instances.keys():
-        if  city_name == start_city_name:
+        if city_name == start_city_name:
             rval[city_name] = 0
         else:
             rval[city_name] = math.inf
@@ -136,7 +126,7 @@ def pick_closest_unvisited_vertex(shortest_distances, unvisited_cities):
     closest_city_name = None
     closest_city_distance = math.inf
     for city_name in unvisited_cities:
-        if shortest_distances[city_name] < closest_city_distance:
+        if closest_city_distance > shortest_distances[city_name]:
             closest_city_distance = shortest_distances[city_name]
             closest_city_name = city_name
     return closest_city_name
@@ -147,16 +137,20 @@ def unvisited_neighbors_of(vertex, unvisited_cities):
     return set(vertex.adjacent_vertices).intersection(unvisited_cities)
 
 
-def dijkstra(start_city_name, edges):
-    shortest_distances = initialize_shortest_distances(start_city_name)
+def dijkstra(start_vertex, edges):
+    shortest_known_distances = initialize_shortest_distances(start_vertex)
     unvisited_cities = initialize_unvisited_cities()
+    previous_vertices = {}
     while unvisited_cities:
-        current_vertex = pick_closest_unvisited_vertex(shortest_distances, unvisited_cities)
-        print(current_vertex)
+        print('Unvisited', unvisited_cities)
+        current_vertex = pick_closest_unvisited_vertex(shortest_known_distances, unvisited_cities)
+        unvisited_cities.remove(current_vertex)
+        print('current vertex', current_vertex)
         for unvisited_neighbor in unvisited_neighbors_of(current_vertex, unvisited_cities):
-            print(unvisited_neighbor)
-
-
+            d = distance(current_vertex, unvisited_neighbor, edges) + shortest_known_distances[current_vertex]
+            if d < shortest_known_distances[unvisited_neighbor]:
+                shortest_known_distances[unvisited_neighbor] = d
+                previous_vertices[unvisited_neighbor] = current_vertex
 
 
 def part_one(filename):
@@ -167,12 +161,13 @@ def part_one(filename):
     print()
     [print(x) for x in Vertex.all_instances.values()]
 
+
 # part_one('Day_09_short_input.txt')
 
 
-
 class Test(unittest.TestCase):
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(self) -> None:
         data = read_puzzle_input('Day_09_short_input.txt')
         edges = build_edges(data)
         create_vertices(edges)
@@ -187,8 +182,7 @@ class Test(unittest.TestCase):
         self.assertEqual('Dublin', Vertex.factory(dublin.adjacent_vertices[0]).adjacent_vertices[0])
         self.assertEqual('Belfast', Vertex.factory(dublin.adjacent_vertices[0]).adjacent_vertices[1])
 
-    def test_traverse(self):
+    def test_dijkstra(self):
         data = read_puzzle_input('Day_09_short_input.txt')
         edges = build_edges(data)
-        traverse(Vertex.factory('London'), edges, [])
         dijkstra('London', edges)
