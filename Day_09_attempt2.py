@@ -33,16 +33,34 @@ def parse_line(line):
 
 def build_edges(data):
     edges: dict[(str, str), Edge] = {}
+    all_vertices = set()
     for line in data:
         edge = Edge(*parse_line(line))
         edges[(edge.from_city, edge.to_city)] = edge
-        # edges[(edge.to_city, edge.from_city)] = edge
-    return edges
+        all_vertices.add(edge.from_city)
+        all_vertices.add(edge.to_city)
+    return edges, all_vertices
+
+
+def permutate(k: int, A: list[str], results):
+    if k == 1:
+        results.append(A)
+        return
+    permutate(k - 1, A, results)
+
+    for i in range(0, k - 1):
+        if k % 2 == 0:
+            A[i], A[k - 1] = A[k - 1], A[i]
+        else:
+            A[0], A[k - 1] = A[k - 1], A[0]
+        permutate(k-1, A, results)
 
 
 def part_one(filename):
     data = read_puzzle_input(filename)
-    edges = build_edges(data)
-    [print(x) for x in edges]
+    edges, all_vertices = build_edges(data)
+    results = []
+    permutate(len(all_vertices), list(all_vertices), results)
+    print(results)
 
 part_one('Day_09_short_input.txt')
