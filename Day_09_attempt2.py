@@ -1,3 +1,4 @@
+import math
 import re
 
 
@@ -31,6 +32,14 @@ def parse_line(line):
     return result.group(1), result.group(2), int(result.group(3))
 
 
+def distance(vertex_one, vertex_two, edges: dict[(str, str)]):
+    if (vertex_one, vertex_two) in edges:
+        return edges[vertex_one, vertex_two].distance
+    if (vertex_two, vertex_one) in edges:
+        return edges[vertex_two, vertex_one].distance
+    raise ValueError(f'Edge for {vertex_one}, {vertex_two} not found.')
+
+
 def build_edges(data):
     edges: dict[(str, str), Edge] = {}
     all_vertices = set()
@@ -42,9 +51,16 @@ def build_edges(data):
     return edges, all_vertices
 
 
+def calculate_cost_of(path, edges):
+    cost = 0
+    for i in range(len(path) - 1):
+        cost += distance(path[i], path[i+1], edges)
+    return cost
+
+
 def permutate(k: int, A: list[str], results):
     if k == 1:
-        results.append(A)
+        results.append(A.copy())
         return
     permutate(k - 1, A, results)
 
@@ -55,12 +71,24 @@ def permutate(k: int, A: list[str], results):
             A[0], A[k - 1] = A[k - 1], A[0]
         permutate(k-1, A, results)
 
+def pick_shortest_path(permutations, edges):
+    shortest_path = None
+    shortest_distance = math.inf
+    for path in permutations:
+        distance = calculate_cost_of(path, edges)
+        if distance < shortest_distance:
+            shortest_distance = distance
+            shortest_path = path
+    return shortest_path, shortest_distance
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
     edges, all_vertices = build_edges(data)
-    results = []
-    permutate(len(all_vertices), list(all_vertices), results)
-    print(results)
+    permutations = []
+    permutate(len(all_vertices), list(all_vertices), permutations)
+    shortest_path, shortest_distance = pick_shortest_path(permutations, edges)
+    print(shortest_path, shortest_distance)
+
 
 part_one('Day_09_short_input.txt')
