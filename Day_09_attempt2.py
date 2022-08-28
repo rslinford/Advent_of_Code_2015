@@ -81,6 +81,16 @@ def pick_shortest_path(permutations, edges):
             shortest_path = path
     return shortest_path, shortest_distance
 
+def pick_longest_path(permutations, edges):
+    longest_path = None
+    longest_distance = 0
+    for path in permutations:
+        distance = calculate_cost_of(path, edges)
+        if distance > longest_distance:
+            longest_distance = distance
+            longest_path = path
+    return longest_path, longest_distance
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -90,5 +100,13 @@ def part_one(filename):
     shortest_path, shortest_distance = pick_shortest_path(permutations, edges)
     print(shortest_path, shortest_distance)
 
+def part_two(filename):
+    data = read_puzzle_input(filename)
+    edges, all_vertices = build_edges(data)
+    permutations = []
+    permutate(len(all_vertices), list(all_vertices), permutations)
+    longest_path, longest_distance = pick_longest_path(permutations, edges)
+    print(longest_path, longest_distance)
 
-part_one('Day_09_short_input.txt')
+
+part_two('Day_09_input.txt')
