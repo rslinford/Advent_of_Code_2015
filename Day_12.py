@@ -9,7 +9,8 @@ def read_puzzle_input(filename):
 
 
 def read_puzzle_input_as_json(filename):
-    return json.load(filename)
+    with open(filename) as f:
+        return json.load(f)
 
 
 def find_numbers(s: str):
@@ -30,8 +31,50 @@ def find_numbers(s: str):
     return all_numbers
 
 
+def handle_list(data, rval):
+    for x in data:
+        if type(x) == int:
+            rval.append(x)
+        elif type(x) == dict:
+            handle_dict(x, rval)
+        elif type(x) == list:
+            handle_list(x, rval)
+        elif type(x) == str:
+            pass
+        else:
+            raise ValueError(f'What to do with type {type(x)}')
+
+
+def dict_is_red(data):
+    for k,v in data.items():
+        if v == 'red':
+            return True
+    return False
+
+
+def handle_dict(data, rval):
+    if dict_is_red(data):
+        return
+    for k,v in data.items():
+        if type(v) == int:
+            rval.append(v)
+        elif type(v) == dict:
+            handle_dict(v, rval)
+        elif type(v) == list:
+            handle_list(v, rval)
+        elif type(v) == str:
+            pass
+        else:
+            raise ValueError(f'What to do with type {type(v)}')
+
+
 def find_numbers_in_json_element(data, rval):
-    pass
+    if type(data) == list:
+        handle_list(data, rval)
+    elif type(data) == dict:
+        handle_dict(data, rval)
+    else:
+        raise ValueError(f'What to do with type {type(data)}')
 
 
 def find_numbers_in_json(json_data):
@@ -62,10 +105,6 @@ def part_two(filename):
     return answer
 
 
-def part_two(param):
-    pass
-
-
 print(part_two('Day_12_input.txt'))
 
 
@@ -81,3 +120,6 @@ class Test(unittest.TestCase):
         self.assertEqual([1, 2, 3], find_numbers_in_json(json.loads('[1,2,3]')))
         self.assertEqual([1, 3], find_numbers_in_json(json.loads('[1,{"c":"red","b":2},3]')))
         self.assertEqual([1, 5], find_numbers_in_json(json.loads('[1,"red",5]')))
+
+if __name__ == '__main__':
+    unittest.main()
