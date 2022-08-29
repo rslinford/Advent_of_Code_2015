@@ -38,6 +38,21 @@ def has_non_overlapping_pairs(password):
     return False
 
 
+def increment_password(password):
+    rval = []
+    incrementing_in_progress = True
+    for c in password[::-1]:
+        if incrementing_in_progress:
+            c = chr(ord(c) + 1)
+            if c > 'z':
+                c = 'a'
+            else:
+                incrementing_in_progress = False
+        rval.insert(0, c)
+
+    return ''.join(rval)
+
+
 def is_valid_password(password):
     if not has_increasing_straight_of_at_least_three(password):
         return False
@@ -49,6 +64,10 @@ def is_valid_password(password):
 
 def part_one():
     old_password = 'vzbxkghb'
+    pw = 'aa'
+    for _ in range(3000):
+        print(pw)
+        pw = increment_password(pw)
 
 
 part_one()
@@ -79,3 +98,10 @@ class Test(unittest.TestCase):
         self.assertFalse(has_non_overlapping_pairs('12aaa6'))
         self.assertTrue(has_non_overlapping_pairs('12aaaa6'))
         self.assertTrue(has_non_overlapping_pairs('aacc'))
+
+    def test_increment_password(self):
+        self.assertEqual('b', increment_password('a'))
+        self.assertEqual('a', increment_password('z'))
+        self.assertEqual('ab', increment_password('aa'))
+        self.assertEqual('azb', increment_password('aza'))
+        self.assertEqual('baa', increment_password('azz'))
