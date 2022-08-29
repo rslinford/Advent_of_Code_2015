@@ -19,12 +19,12 @@ def look_and_say(s):
     return ''.join(result)
 
 
-
 def part_one():
     result = '1113222113'
     for _ in range(40):
         result = look_and_say(result)
     print('After 40 iterations length is:', len(result))
+
 
 def part_two():
     result = '1113222113'
@@ -34,6 +34,7 @@ def part_two():
 
 
 part_two()
+
 
 class Test(unittest.TestCase):
     def test_look_and_say(self):
