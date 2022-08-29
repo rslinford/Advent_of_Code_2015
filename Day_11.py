@@ -1,5 +1,6 @@
 import unittest
 
+
 def has_increasing_straight_of_at_least_three(password):
     prev_c = ''
     consecutive = 1
@@ -13,7 +14,6 @@ def has_increasing_straight_of_at_least_three(password):
                 consecutive = 1
         prev_c = c
     return False
-
 
 
 def has_confusing_letters(password):
@@ -62,22 +62,20 @@ def is_valid_password(password):
         return False
     return True
 
+
 def part_one(old_password):
+    password = old_password
+    is_first = True
+    while not is_valid_password(password) or is_first:
+        is_first = False
+        password = increment_password(password)
 
-        password = old_password
-        is_first = True
-        while not is_valid_password(password) or is_first:
-            is_first = False
-            password = increment_password(password)
-
-        return password
+    return password
 
 
 # print(part_one('vzbxkghb')
 
 print(part_one('vzbxxyzz'))
-
-
 
 
 class Test(unittest.TestCase):
