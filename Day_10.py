@@ -30,7 +30,7 @@ def part_two():
     result = '1113222113'
     for _ in range(50):
         result = look_and_say(result)
-    print('After 40 iterations length is:', len(result))
+    print('After 50 iterations length is:', len(result))
 
 
 part_two()
