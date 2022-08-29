@@ -19,7 +19,7 @@ def find_numbers(s: str):
         if c.isdigit():
             current_number.append(c)
         elif c == '-':
-            assert(len(current_number) == 0)
+            assert (len(current_number) == 0)
             current_number.append(c)
         else:
             if current_number:
@@ -30,8 +30,14 @@ def find_numbers(s: str):
     return all_numbers
 
 
-def find_numbers_in_json(data):
+def find_numbers_in_json_element(data, rval):
     pass
+
+
+def find_numbers_in_json(json_data):
+    rval = []
+    find_numbers_in_json_element(json_data, rval)
+    return rval
 
 
 def add_numbers(numbers):
@@ -39,6 +45,7 @@ def add_numbers(numbers):
     for n in numbers:
         tally += n
     return tally
+
 
 def part_one(filename):
     rval = 0
@@ -48,11 +55,9 @@ def part_one(filename):
     return answer
 
 
-
 def part_two(filename):
-    rval = 0
-    data = read_puzzle_input_as_json(filename)
-    numbers = find_numbers_in_json(data)
+    json_data = read_puzzle_input_as_json(filename)
+    numbers = find_numbers_in_json(json_data)
     answer = add_numbers(numbers)
     return answer
 
@@ -71,3 +76,8 @@ class Test(unittest.TestCase):
         self.assertEqual([-1, 1], find_numbers('{"a":[-1,1]}'))
         self.assertEqual([-1, 1], find_numbers('[-1,{"a":1}]'))
         self.assertEqual([1], find_numbers('"a":1'))
+
+    def test_find_numbers_in_json(self):
+        self.assertEqual([1, 2, 3], find_numbers_in_json(json.loads('[1,2,3]')))
+        self.assertEqual([1, 3], find_numbers_in_json(json.loads('[1,{"c":"red","b":2},3]')))
+        self.assertEqual([1, 5], find_numbers_in_json(json.loads('[1,"red",5]')))
