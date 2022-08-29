@@ -62,15 +62,16 @@ def is_valid_password(password):
         return False
     return True
 
-def part_one():
-    old_password = 'vzbxkghb'
-    pw = 'aa'
-    for _ in range(3000):
-        print(pw)
-        pw = increment_password(pw)
+def part_one(old_password):
+
+        password = old_password
+        while not is_valid_password(password):
+            password = increment_password(password)
+
+        return password
 
 
-part_one()
+print(part_one('vzbxkghb'))
 
 
 class Test(unittest.TestCase):
@@ -105,3 +106,7 @@ class Test(unittest.TestCase):
         self.assertEqual('ab', increment_password('aa'))
         self.assertEqual('azb', increment_password('aza'))
         self.assertEqual('baa', increment_password('azz'))
+
+    def test_part_one(self):
+        self.assertEqual('abcdffaa', part_one('abcdefgh'))
+        self.assertEqual('ghjaabcc', part_one('ghijklmn'))
