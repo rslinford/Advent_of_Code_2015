@@ -65,13 +65,19 @@ def is_valid_password(password):
 def part_one(old_password):
 
         password = old_password
-        while not is_valid_password(password):
+        is_first = True
+        while not is_valid_password(password) or is_first:
+            is_first = False
             password = increment_password(password)
 
         return password
 
 
-print(part_one('vzbxkghb'))
+# print(part_one('vzbxkghb')
+
+print(part_one('vzbxxyzz'))
+
+
 
 
 class Test(unittest.TestCase):
