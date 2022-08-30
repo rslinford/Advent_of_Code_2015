@@ -54,7 +54,7 @@ def build_edges(data):
 def calculate_cost_of(path, edges):
     cost = 0
     for i in range(len(path) - 1):
-        cost += distance(path[i], path[i+1], edges)
+        cost += distance(path[i], path[i + 1], edges)
     return cost
 
 
@@ -69,7 +69,8 @@ def permutate(k: int, A: list[str], results):
             A[i], A[k - 1] = A[k - 1], A[i]
         else:
             A[0], A[k - 1] = A[k - 1], A[0]
-        permutate(k-1, A, results)
+        permutate(k - 1, A, results)
+
 
 def pick_shortest_path(permutations, edges):
     shortest_path = None
@@ -80,6 +81,7 @@ def pick_shortest_path(permutations, edges):
             shortest_distance = distance
             shortest_path = path
     return shortest_path, shortest_distance
+
 
 def pick_longest_path(permutations, edges):
     longest_path = None
@@ -99,6 +101,7 @@ def part_one(filename):
     permutate(len(all_vertices), list(all_vertices), permutations)
     shortest_path, shortest_distance = pick_shortest_path(permutations, edges)
     print(shortest_path, shortest_distance)
+
 
 def part_two(filename):
     data = read_puzzle_input(filename)
