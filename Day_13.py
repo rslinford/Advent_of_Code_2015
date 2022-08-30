@@ -51,7 +51,6 @@ class Table:
     def __init__(self, keys):
         self.arrangement = list(keys)
 
-
     def __repr__(self):
         return self.render()
 
@@ -148,7 +147,7 @@ short = False
 if short:
     print('Answer:', part_one('Day_13_short_input.txt'))
 else:
-    print('Answer:', part_one('Day_13_input.txt'))
+    print('Answer:', part_one('Day_13_input_with_me.txt'))
 
 
 class Test(unittest.TestCase):
