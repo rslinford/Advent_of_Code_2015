@@ -18,7 +18,7 @@ class Person:
 
     def __init__(self, name):
         self.name = name
-        self.preferences = []
+        self.preferences = {}
 
     def __repr__(self):
         return f'{self.__class__.__name__} name({self.name} preferences({self.preferences}))'
@@ -32,7 +32,38 @@ class Person:
             return cls.all_instances[name]
 
     def add_preference(self, preference: Preference):
-        self.preferences.append(preference)
+        self.preferences[preference.object] = preference
+
+def calculate_happiness_for_one(subject, left_object, right_object):
+    s = Person.factory(subject)
+    left_preference = s.preferences[left_object]
+    right_preference = s.preferences[right_object]
+    happiness = left_preference.happiness_units + right_preference.happiness_units
+    return happiness
+
+
+class Table:
+    def __init__(self, keys):
+        self.arrangement = list(keys)
+        self.arrangement.sort()
+
+    def calculate_happiness(self):
+        tally = 0
+        for i in range(len(self.arrangement)):
+            if i == 0:
+                left_hand = self.arrangement[-1]
+            else:
+                left_hand = self.arrangement[i-1]
+            if i == len(self.arrangement) - 1:
+                right_hand = self.arrangement[0]
+            else:
+                right_hand = self.arrangement[i+1]
+            tally += calculate_happiness_for_one(self.arrangement[i], left_hand, right_hand)
+
+        return tally
+
+    def render(self):
+        return str(self.arrangement)
 
 
 def parse_preference(text_preference):
@@ -59,10 +90,10 @@ def read_puzzle_input(filename):
     return data
 
 
-def print_all_people_nicely():
+def pretty_print_all_people():
     for x in Person.all_instances.values():
         print(x.name)
-        for y in x.preferences:
+        for y in x.preferences.values():
             print('  ', y)
 
 
@@ -92,18 +123,29 @@ class Test(unittest.TestCase):
     def test_parse_preferences_into_people(self):
         data = read_puzzle_input('Day_13_short_input.txt')
         parse_preferences_into_people(data)
-        print_all_people_nicely()
         person = Person.all_instances['Carol']
         self.assertEqual('Carol', person.name)
         self.assertEqual(3, len(person.preferences))
-        self.assertEqual('Carol', person.preferences[0].subject)
-        for x in person.preferences:
-            match x.object:
+        self.assertEqual('Carol', person.preferences['Bob'].subject)
+        for k,v in person.preferences.items():
+            match k:
                 case 'Alice':
-                    self.assertEqual(-62, x.happiness_units)
+                    self.assertEqual(-62, v.happiness_units)
                 case 'Bob':
-                    self.assertEqual(60, x.happiness_units)
+                    self.assertEqual(60, v.happiness_units)
                 case 'David':
-                    self.assertEqual(55, x.happiness_units)
+                    self.assertEqual(55, v.happiness_units)
                 case _:
                     raise ValueError
+
+    def test_calculate_happiness_for_one(self):
+        data = read_puzzle_input('Day_13_short_input.txt')
+        parse_preferences_into_people(data)
+        self.assertEqual(-25, calculate_happiness_for_one('Alice', 'Bob', 'Carol'))
+        self.assertEqual(76, calculate_happiness_for_one('Bob', 'Alice', 'Carol'))
+
+    def test_calculate_happiness(self):
+        data = read_puzzle_input('Day_13_short_input.txt')
+        parse_preferences_into_people(data)
+        table = Table(Person.all_instances.keys())
+        self.assertEqual(330, table.calculate_happiness())
