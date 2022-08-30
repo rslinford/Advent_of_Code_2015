@@ -1,6 +1,6 @@
+import math
 import re
 import unittest
-from typing import Dict, Any
 
 
 class Preference:
@@ -34,6 +34,11 @@ class Person:
     def add_preference(self, preference: Preference):
         self.preferences[preference.object] = preference
 
+    @classmethod
+    def clear_all_instances(cls):
+        cls.all_instances.clear()
+
+
 def calculate_happiness_for_one(subject, left_object, right_object):
     s = Person.factory(subject)
     left_preference = s.preferences[left_object]
@@ -47,17 +52,20 @@ class Table:
         self.arrangement = list(keys)
         self.arrangement.sort()
 
+    def __repr__(self):
+        return self.render()
+
     def calculate_happiness(self):
         tally = 0
         for i in range(len(self.arrangement)):
             if i == 0:
                 left_hand = self.arrangement[-1]
             else:
-                left_hand = self.arrangement[i-1]
+                left_hand = self.arrangement[i - 1]
             if i == len(self.arrangement) - 1:
                 right_hand = self.arrangement[0]
             else:
-                right_hand = self.arrangement[i+1]
+                right_hand = self.arrangement[i + 1]
             tally += calculate_happiness_for_one(self.arrangement[i], left_hand, right_hand)
 
         return tally
@@ -97,15 +105,50 @@ def pretty_print_all_people():
             print('  ', y)
 
 
+def permutate(k: int, A: list[str], results):
+    if k == 1:
+        results.append(A.copy())
+        return
+    permutate(k - 1, A, results)
+
+    for i in range(0, k - 1):
+        if k % 2 == 0:
+            A[i], A[k - 1] = A[k - 1], A[i]
+        else:
+            A[0], A[k - 1] = A[k - 1], A[0]
+        permutate(k - 1, A, results)
+
+
+def maximize_happiness():
+    table = Table(Person.all_instances.keys())
+    permutations = []
+    permutate(len(table.arrangement), table.arrangement, permutations)
+    greatest_happiness = -math.inf
+    greatest_arrangement = None
+    for permutation in permutations:
+        happiness = Table(permutation).calculate_happiness()
+        print(permutation, happiness)
+        if happiness > greatest_happiness:
+            greatest_happiness = happiness
+            greatest_arrangement = permutation
+    return greatest_happiness, greatest_arrangement
+
+
 def part_one(filename):
-    rval = 0
+    Person.clear_all_instances()
     data = read_puzzle_input(filename)
     parse_preferences_into_people(data)
-    print(Person.all_instances)
-    return rval
+    greatest_happiness, greatest_arrangement = maximize_happiness()
+    print('Happiness:', greatest_happiness, 'Arrangement:\n', greatest_arrangement)
+    return greatest_happiness
 
 
-# print(part_one('Day_13_input.txt'))
+short = False
+
+if short:
+    print('Answer:', part_one('Day_13_short_input.txt'))
+else:
+    print('Answer:', part_one('Day_13_input.txt'))
 
 
 class Test(unittest.TestCase):
@@ -121,13 +164,14 @@ class Test(unittest.TestCase):
         self.assertEqual('Carol', preference.object)
 
     def test_parse_preferences_into_people(self):
+        Person.clear_all_instances()
         data = read_puzzle_input('Day_13_short_input.txt')
         parse_preferences_into_people(data)
         person = Person.all_instances['Carol']
         self.assertEqual('Carol', person.name)
         self.assertEqual(3, len(person.preferences))
         self.assertEqual('Carol', person.preferences['Bob'].subject)
-        for k,v in person.preferences.items():
+        for k, v in person.preferences.items():
             match k:
                 case 'Alice':
                     self.assertEqual(-62, v.happiness_units)
@@ -139,12 +183,14 @@ class Test(unittest.TestCase):
                     raise ValueError
 
     def test_calculate_happiness_for_one(self):
+        Person.clear_all_instances()
         data = read_puzzle_input('Day_13_short_input.txt')
         parse_preferences_into_people(data)
         self.assertEqual(-25, calculate_happiness_for_one('Alice', 'Bob', 'Carol'))
         self.assertEqual(76, calculate_happiness_for_one('Bob', 'Alice', 'Carol'))
 
     def test_calculate_happiness(self):
+        Person.clear_all_instances()
         data = read_puzzle_input('Day_13_short_input.txt')
         parse_preferences_into_people(data)
         table = Table(Person.all_instances.keys())
