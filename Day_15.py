@@ -29,7 +29,7 @@ class Cookie:
         self.ingredients: dict[str, int] = {}
 
     def __repr__(self):
-        return f'{self.__class__.__name__} ingredients({self.ingredients})'
+        return f'{self.__class__.__name__} calories({self.calculate_calories()}) ingredients({self.ingredients})'
 
     def add_ingredient(self, ingredient, amount):
         self.ingredients[ingredient] = amount
@@ -46,7 +46,6 @@ class Cookie:
         temp['flavor'] = 0
         temp['texture'] = 0
         for name, amount in self.ingredients.items():
-            print(name, amount)
             ingredient = Ingredient.all_instances[name]
             temp['capacity'] += ingredient.capacity * amount
             temp['durability'] += ingredient.durability * amount
@@ -62,6 +61,12 @@ class Cookie:
             temp['texture'] = 0
         return temp['capacity'] * temp['durability'] * temp['flavor'] * temp['texture']
 
+    def calculate_calories(self):
+        tally = 0
+        for ingredient_name, amount in self.ingredients.items():
+            ingredient = Ingredient.all_instances[ingredient_name]
+            tally += ingredient.calories * amount
+        return tally
 
 def deserialize_ingredients(data: list[str]) -> list[Ingredient]:
     ingredients = []
@@ -79,14 +84,32 @@ def deserialize_ingredients(data: list[str]) -> list[Ingredient]:
     return ingredients
 
 
-short = True
+def mix():
+    max_score = 0
+    for w in range(0, 101):
+        for x in range(0, 101):
+            for y in range(0, 101):
+                for z in range(0, 101):
+                    if w + x + y + z == 100:
+                        cookie = Cookie()
+                        cookie.add_ingredient('Frosting', w)
+                        cookie.add_ingredient('Candy', x)
+                        cookie.add_ingredient('Butterscotch', y)
+                        cookie.add_ingredient('Sugar', z)
+                        score = cookie.calculate_score()
+                        if score > max_score and cookie.calculate_calories() <= 500:
+                            print(score, cookie)
+                            max_score = score
+    return max_score
+
+
+short = False
 
 
 def part_one(filename):
     data = read_puzzle_input(filename)
-    ingredients = deserialize_ingredients(data)
-    # for x in ingredients:
-    #     print(x)
+    deserialize_ingredients(data)
+    return mix()
 
 
 if short:
