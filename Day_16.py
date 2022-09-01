@@ -9,7 +9,15 @@ class Sue:
                      'goldfish': 0, 'trees': 0, 'perfumes': 0, 'cars': 0}
 
     def render(self):
-        pass
+        rval = []
+        rval.append(self.__class__.__name__)
+        rval.append(f' id ({self.id})')
+        for k, v in self.attr.items():
+            rval.append(f' {k}: {v}')
+        return ''.join(rval)
+
+    def __repr__(self):
+        return self.render()
 
     def set_attribute(self, attr_name, amount):
         if attr_name not in self.attr.keys():
@@ -38,20 +46,23 @@ def read_puzzle_input(filename):
     return rval
 
 
-short = False
-
-
 def part_one(filename):
-    data = read_puzzle_input(filename)
-    print(data)
+    sues = read_puzzle_input(filename)
+    # for sue in sues:
+    #     print(sue)
 
 
-if short:
-    print('Answer:', part_one('Day_15_short_input.txt'))
-else:
-    print('Answer:', part_one('Day_16_input.txt'))
+print('Answer:', part_one('Day_16_input.txt'))
 
 
 class Test(unittest.TestCase):
-    def test_name(self):
-        pass
+    def test_sue(self):
+        sues = read_puzzle_input('Day_16_input.txt')
+        self.assertEqual(1, sues[0].id)
+        self.assertEqual(6, sues[0].attr['goldfish'])
+        self.assertEqual(9, sues[0].attr['trees'])
+        self.assertEqual(0, sues[0].attr['akitas'])
+        self.assertEqual(3, sues[2].id)
+        self.assertEqual(10, sues[2].attr['cars'])
+        self.assertEqual(6, sues[2].attr['akitas'])
+        self.assertEqual(7, sues[2].attr['perfumes'])
