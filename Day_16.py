@@ -5,8 +5,7 @@ import unittest
 class Sue:
     def __init__(self, id):
         self.id = id
-        self.attr = {'children': 0, 'cats': 0, 'samoyeds': 0, 'pomeranians': 0, 'akitas': 0, 'vizslas': 0,
-                     'goldfish': 0, 'trees': 0, 'perfumes': 0, 'cars': 0}
+        self.attr = {}
 
     def render(self):
         rval = []
@@ -20,9 +19,29 @@ class Sue:
         return self.render()
 
     def set_attribute(self, attr_name, amount):
-        if attr_name not in self.attr.keys():
-            raise ValueError(f'"{attr_name}" is unknown.')
         self.attr[attr_name] = amount
+
+    def is_match(self, target_attrs):
+        for k, v in target_attrs.items():
+            if k not in self.attr.keys():
+                continue
+            if target_attrs[k] != self.attr[k]:
+                return False
+        return True
+
+    def is_match_two(self, target_attrs):
+        for k, v in target_attrs.items():
+            if k not in self.attr.keys():
+                continue
+            if k in {'cats', 'trees'}:
+                if target_attrs[k] >= self.attr[k]:
+                    return False
+            elif k in {'pomeranians', 'goldfish'}:
+                if target_attrs[k] <= self.attr[k]:
+                    return False
+            elif target_attrs[k] != self.attr[k]:
+                return False
+        return True
 
 
 def read_puzzle_input(filename):
@@ -46,13 +65,41 @@ def read_puzzle_input(filename):
     return rval
 
 
+target_attrs = {
+    'children': 3,
+    'cats': 7,
+    'samoyeds': 2,
+    'pomeranians': 3,
+    'akitas': 0,
+    'vizslas': 0,
+    'goldfish': 5,
+    'trees': 3,
+    'cars': 2,
+    'perfumes': 1
+}
+
+
 def part_one(filename):
     sues = read_puzzle_input(filename)
-    # for sue in sues:
-    #     print(sue)
+    the_sue = None
+    for sue in sues:
+        if sue.is_match(target_attrs):
+            the_sue = sue
+            print('Match!: ', sue)
+    return the_sue
 
 
-print('Answer:', part_one('Day_16_input.txt'))
+def part_two(filename):
+    sues = read_puzzle_input(filename)
+    the_sue = None
+    for sue in sues:
+        if sue.is_match_two(target_attrs):
+            the_sue = sue
+            print('Match!: ', sue)
+    return the_sue
+
+
+print('Answer:', part_two('Day_16_input.txt'))
 
 
 class Test(unittest.TestCase):
