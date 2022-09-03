@@ -4,15 +4,19 @@ import numpy as np
 class LightGrid:
     grid: np.chararray
 
-    def __init__(self, width, height, initial_state):
-        self.grid = np.chararray(initial_state)
-        for y in range(height):
-            for x in range(width):
+    def __init__(self, initial_state):
+        dim = len(initial_state)
+        self.grid = np.chararray((dim, dim))
+        self.grid[:] = '.'
+        for y in range(dim):
+            for x in range(dim):
                 self.grid[y][x] = initial_state[y][x]
 
     def __repr__(self):
         rval = []
-        for y in range(self.grid.shape[0] - 1, -1, -1):
+        for y in range(self.grid.shape[0]):
+            if y > 0:
+                rval.append('\n')
             for x in range(self.grid.shape[1]):
                 match self.grid[y][x]:
                     case b'.':
@@ -21,8 +25,6 @@ class LightGrid:
                         rval.append('#')
                     case _:
                         raise ValueError
-            if y > 0:
-                rval.append('\n')
         return ''.join(rval)
 
     def turn_on(self, x_index, y_index):
@@ -57,9 +59,8 @@ def read_puzzle_input(filename):
 
 def part_one(filename):
     data = read_puzzle_input(filename)
-    print(data)
-    lg = LightGrid(100, 100, data)
+    lg = LightGrid(data)
     print(lg)
 
 
-part_one('Day_18_input.txt')
+part_one('Day_18_short_input.txt')
