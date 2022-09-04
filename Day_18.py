@@ -102,6 +102,18 @@ class LightGrid:
         self.grid = next_lg.grid
 
 
+class LightGridMarkTwo(LightGrid):
+    def __init__(self, dim, initial_state):
+        super().__init__(dim, initial_state)
+
+    def one_day(self):
+        super().one_day()
+        self.turn_on(0, 0)
+        self.turn_on(self.grid.shape[1] - 1, 0)
+        self.turn_on(0, self.grid.shape[0] - 1)
+        self.turn_on(self.grid.shape[1] - 1, self.grid.shape[0] - 1)
+
+
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
         data = f.read().strip().split('\n')
@@ -117,7 +129,17 @@ def part_one(filename):
         print(f'\nDay {i} lit({lg.tally_lit()})\n{lg}')
 
 
-part_one('Day_18_input.txt')
+def part_two(filename):
+    data = read_puzzle_input(filename)
+    lg = LightGridMarkTwo(len(data), data)
+    print(f'Initial state\n{lg}')
+    for i in range(1, 101):
+        lg.one_day()
+        print(f'\nDay {i} lit({lg.tally_lit()})\n{lg}')
+
+
+# 865 is too low
+part_two('Day_18_input_two.txt')
 
 
 class Test(unittest.TestCase):
